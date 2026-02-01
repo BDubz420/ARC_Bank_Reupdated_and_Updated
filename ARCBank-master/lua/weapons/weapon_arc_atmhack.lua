@@ -2,6 +2,8 @@
 if SERVER then
 	AddCSLuaFile()
 	util.AddNetworkString( "arcatmhack_gui" )
+	util.AddNetworkString( "arcbank_atmhack_chargerate" )
+	util.AddNetworkString( "arcbank_atmhack_energy_time" )
 end
 
 
@@ -169,7 +171,12 @@ function SWEP:Reload()
 end
 function SWEP:Deploy()
 		if SERVER then
-			self.Owner:SendLua("LocalPlayer():GetActiveWeapon().chargerate = "..tostring(ARCBank.Settings["atm_hack_charge_rate"]))
+			local owner = self:GetOwner()
+			if IsValid(owner) then
+				net.Start("arcbank_atmhack_chargerate")
+				net.WriteFloat(ARCBank.Settings["atm_hack_charge_rate"] or 0)
+				net.Send(owner)
+			end
 		else
 			self.SScreenScroll = 1
 			self.SScreenScrollDelay = CurTime() + 0.1
@@ -268,6 +275,26 @@ function SWEP:Initialize()
 		self.Settings = {500,false,ARCBank.Settings["hack_max"],ARCBank.Settings["atm_hack_charge_rate"]}
 	end
 
+end
+
+if CLIENT then
+	net.Receive("arcbank_atmhack_chargerate", function()
+		local chargerate = net.ReadFloat()
+		local ply = LocalPlayer()
+		if not IsValid(ply) then return end
+		local weapon = ply:GetActiveWeapon()
+		if not IsValid(weapon) or weapon:GetClass() ~= "weapon_arc_atmhack" then return end
+		weapon.chargerate = chargerate
+	end)
+
+	net.Receive("arcbank_atmhack_energy_time", function()
+		local startEnergyTime = net.ReadFloat()
+		local ply = LocalPlayer()
+		if not IsValid(ply) then return end
+		local weapon = ply:GetActiveWeapon()
+		if not IsValid(weapon) or weapon:GetClass() ~= "weapon_arc_atmhack" then return end
+		weapon.StartEnergyTime = startEnergyTime
+	end)
 end
 
 function SWEP:Holster()

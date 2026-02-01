@@ -1,11 +1,12 @@
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014,2015 Aritz Beobide-Cardinal All rights reserved.
+--  Copyright 2014,2015 Aritz Beobide-Cardinal All rights reserved.
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include('shared.lua')
 util.AddNetworkString( "arcbank_hacker_status" )
 util.AddNetworkString( "arcbank_hacker_spark" )
+util.AddNetworkString( "arcbank_atmhack_energy_time" )
 ARCBank.Loaded = false
 ENT.ARitzDDProtected = true
 function ENT:Initialize()
@@ -431,8 +432,13 @@ function ENT:Use( ply, caller )--self:HackStop()
 		self.OurHealth = 0
 		local StartEnergyTime = CurTime() - (self.EnergyLevel / ARCBank.Settings["atm_hack_charge_rate"])
 		timer.Simple(0,function()
-			ply:GetActiveWeapon().StartEnergyTime = StartEnergyTime
-			ply:SendLua("LocalPlayer():GetActiveWeapon().StartEnergyTime = "..StartEnergyTime)
+			local weapon = ply:GetActiveWeapon()
+			if IsValid(weapon) then
+				weapon.StartEnergyTime = StartEnergyTime
+			end
+			net.Start("arcbank_atmhack_energy_time")
+			net.WriteFloat(StartEnergyTime)
+			net.Send(ply)
 		end)
 		self:Remove()
 	end
