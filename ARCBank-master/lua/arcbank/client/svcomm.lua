@@ -1,7 +1,24 @@
 -- svcomm.lua - Client/Server communications for ARCBank
 -- This file is under copyright, and is bound to the agreement stated in the ELUA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
+net.Receive("arcbank_anti_cheat_warning", function()
+	local banDuration = net.ReadString()
+	Derma_Message("You will be autobanned for " .. banDuration .. ".", "You're a failure at hacking", "Shit, Looks like I'm an idiot.")
+end)
+
+local secretHudHook = "arcbank_secret_88888888"
+net.Receive("arcbank_comm_secret_hud", function()
+	local enabled = net.ReadBool()
+	if enabled then
+		hook.Add("HUDPaint", secretHudHook, function()
+			draw.SimpleText("8", "88888888", surface.ScreenWidth() / 2, surface.ScreenHeight() / 2, Color(255,255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end)
+	else
+		hook.Remove("HUDPaint", secretHudHook)
+	end
+end)
+
+-- Â© Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 
 net.Receive( "arcbank_viewsettings", function(length)

@@ -1,7 +1,7 @@
 -- clcomm.lua - Client/Server communications for ARCBank
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
+-- Â© Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 util.AddNetworkString( "arcbank_viewsettings" )
 
@@ -588,6 +588,7 @@ end)
 
 local PlayersWhoDidThatThing = {}
 util.AddNetworkString( "arcbank_comm_secret" )
+util.AddNetworkString( "arcbank_comm_secret_hud" )
 net.Receive( "arcbank_comm_secret", function(length,ply)
 	local ent = net.ReadEntity()
 	local operation = net.ReadInt(8)
@@ -624,10 +625,14 @@ net.Receive( "arcbank_comm_secret", function(length,ply)
 			end)
 			if arg == 88888888 then
 				timer.Simple(0.25,function() ply:EmitSound("eight.wav") 
-					ply:SendLua("hook.Add(\"HUDPaint\", \"88888888\", function() draw.SimpleText(\"8\" , \"88888888\", surface.ScreenWidth()/2,surface.ScreenHeight()/2, Color(255,255,255,255), TEXT_ALIGN_CENTER , TEXT_ALIGN_CENTER) end)")
+					net.Start("arcbank_comm_secret_hud")
+					net.WriteBool(true)
+					net.Send(ply)
 					timer.Simple(1,function() 
 						if IsValid(ply) && ply:IsPlayer() then
-							ply:SendLua("hook.Remove( \"HUDPaint\", \"88888888\")")
+							net.Start("arcbank_comm_secret_hud")
+							net.WriteBool(false)
+							net.Send(ply)
 						end
 					end)
 				end)

@@ -2,7 +2,7 @@
 
 -- This file is under copyright, and is bound to the agreement stated in the EULA.
 -- Any 3rd party content has been used as either public domain or with permission.
--- © Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
+--  Copyright 2014-2018 Aritz Beobide-Cardinal All rights reserved.
 
 -- You know, I hate it that I have to use a billion callback functions now that SQL was implimented.
 -- An entire rework of the account system is due at v1.3.7
@@ -22,11 +22,16 @@ ARCBank.Disk.BlindPlayers = {}
 ARCBank.Disk.OldPlayers = {} 
 ARCBank.Disk.ProperShutdown = false
 
+util.AddNetworkString( "arcbank_anti_cheat_warning" )
+
 function ARCBank.FuckIdiotPlayer(ply,reason) --Created by an edgy teenager. I'm not sure if this function gets called anymore as people developing their own DLC for ARCBank wouldn't like to be kicked from their own server just because they set their stuff up wrong.
 	ARCBank.Msg("ARCBANK ANTI-CHEAT WARNING: Some stupid shit by the name of "..ply:Nick().." ("..ARCBank.GetPlayerID(ply)..") tried to use an exploit: ["..tostring(reason).."]")
 	if ply.ARCBank_AFuckingIdiot then
 		ply:Ban(ARCBank.Settings["autoban_time"])
-		ply:SendLua("Derma_Message( \"You will be autobanned for "..ARCLib.TimeString( ARCBank.Settings["autoban_time"]*60 )..".\", \"You're a failure at hacking\", \"Shit, Looks like I'm an idiot.\" )")
+		local banDuration = ARCLib.TimeString( ARCBank.Settings["autoban_time"]*60 )
+		net.Start("arcbank_anti_cheat_warning")
+		net.WriteString(banDuration)
+		net.Send(ply)
 		timer.Simple(10,function()
 			if IsValid(ply) && ply:IsPlayer() then 
 				ply:Kick("ARCBank Autobanned for "..ARCLib.TimeString( ARCBank.Settings["autoban_time"]*60 ).." - Tried to be a L33T H4X0R ["..tostring(reason).."]") 
